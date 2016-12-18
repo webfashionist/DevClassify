@@ -33,10 +33,11 @@ class Classify {
 	/**
 	* Returns the probability of each included language
 	* @param string $code Code
-	* @param bool removeComments Remove comments, may result in more inaccurate results (Default: true)
+	* @param bool $removeComments Remove comments, may result in more inaccurate results (Default: true)
+	* @param bool $absoluteValues Use absolute values for probability values. Note: If JS or PHP snippets are used, the values will always be relative. (Default: false)
 	* @return array
 	*/
-	public function language($code, $removeComments = true) {
+	public function language($code, $removeComments = true, $absoluteValues = false) {
 		// reset parameters for each code
 		$this->resetParameters();
 
@@ -48,6 +49,9 @@ class Classify {
 
 		// analyze the programming languages
 		$this->checkLanguages();
+		if($absoluteValues === false) {
+			$this->probabilities = $this->relativeValues($this->probabilities);
+		}
 		return $this->probabilities;
 	}
 
@@ -58,6 +62,26 @@ class Classify {
 	**/
 	public function getForcedExtension() {
 		return $this->forceExtension;
+	}
+
+
+
+	/**
+	* Returns relative values for otherwise absolute ones
+	* @param array $array Array of values
+	* @return array
+	**/
+	private function relativeValues($array) {
+		$total = array_sum($array);
+		$divider = count($array);
+		if($divider > 0) {
+			foreach($array as $key => $value) {
+				$array[$key] = ($value ? (($value*100)/$total) : 0);
+			}
+			return $array;
+		} else {
+			return $array;
+		}
 	}
 
 
