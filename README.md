@@ -15,8 +15,7 @@ To implement DevClassify in your project, you only need to `include` the `src/cl
 - [X] PHP
 - [X] SQL
 - [X] JSON
-
-- [ ] Bash
+- [X] Bash
 - [ ] Python
 - [ ] ...
 

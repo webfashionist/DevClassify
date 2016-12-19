@@ -58,6 +58,7 @@ $time = microtime(true); // Gets microseconds
 			<b>CSS:</b> <?php echo $prob->css; ?>%<br>
 			<b>JSON:</b> <?php echo $prob->json; ?>%<br>
 			<b>SQL:</b> <?php echo $prob->sql; ?>%<br>
+			<b>Bash:</b> <?php echo $prob->sh; ?>%<br>
 			<hr>
 			Recommended file extension: <b><?php echo $result->extension; ?></b>
 		</div>

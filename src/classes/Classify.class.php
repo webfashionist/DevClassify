@@ -90,7 +90,7 @@ class Classify {
 	**/
 	private function resetParameters() {
 		// reset probabilites
-		$this->probabilities = array("css" => 0, "html" => 0, "php" => 0, "js" => 0, "json" => 0, "sql" => 0, "xml" => 0);
+		$this->probabilities = array("css" => 0, "html" => 0, "php" => 0, "js" => 0, "json" => 0, "sql" => 0, "xml" => 0, "sh" => 0);
 		// reset forced extension
 		$this->forceExtension = false;
 	}
@@ -124,6 +124,7 @@ class Classify {
 		$this->html();
 		$this->xml();
 		$this->json();
+		$this->bash();
 	}
 
 
@@ -258,7 +259,7 @@ class Classify {
 		}
 
 		// includes/echo/return/... (PHP)
-		preg_match_all("/((include|require)(_once)?|echo|return|print|exit|break)(.*?);/is", $this->code, $includes);
+		preg_match_all("/((include|require)(_once)?|echo|return|print|exit|break)[^;]*;\s*$/is", $this->code, $includes);
 		if(isset($includes[0]) && is_array($includes[0]) && count($includes[0]) > 0) {
 			$result["php"] += 2;
 		}
@@ -365,6 +366,7 @@ class Classify {
 			}
 		}
 
+
 		$totalPoints = array_sum($result);
 		if($totalPoints > 0) {
 			// reset CSS probability as it may collide with functions
@@ -381,6 +383,44 @@ class Classify {
 
 		return (object) $result;
 	}
+
+
+	/**
+	* Checks if Bash is used
+	* @return bool
+	**/
+	private function bash() {
+		// check if Bash code is used
+
+		// if else clause
+		preg_match_all("/if\s+\[\s+.*?\s+\].*?then.*?(elif\s+\[\s+.*?\s+\].*?then.*?)*fi/is", $this->code, $if);
+		$length = $this->calculateLength(isset($if[0]) ? $if[0] : array());
+
+		// loops
+		preg_match_all("/(until|while|for\s+.*?\s+in\s+.*?)\s+\[\s+.*?\s+\].*?do.*?done/is", $this->code, $loop);
+		$length += $this->calculateLength(isset($loop[0]) ? $loop[0] : array());
+		preg_match_all("/for\s+.*?\s+in\s+.*?do.*?done/is", $this->code, $loop1);
+		$length += $this->calculateLength(isset($loop1[0]) ? $loop1[0] : array());
+
+		// commands
+		$commands = array(
+			"/echo\s+[\$][_a-z0-9]+[^;]$/is", // echo variable without ; at the end
+			"/^[_a-z0-9]+=[^;]+$/is", // set variable (e.g. variable="test" without ; at the end)
+			"/let\s+[_a-z0-9]+=/is", // define variables with let
+			"/(read|touch|ls|cat|mkdir|cd|grep|rm|tar|cp|mv)\s+/is", // read input,
+			"/\A#!(\/usr)?(\/local)?\/bin(\/env)?\s?(\/)?(bash|sh).*?\z/is", // Shebang (e.g.  #!/bin/bash)
+			);
+		foreach($commands as $command) {
+			preg_match_all($command, $this->code, $bashCommand);
+			$length += $this->calculateLength(isset($bashCommand[0]) ? $bashCommand[0] : array());
+		}
+
+		// calculate probability for this code
+		$this->probability($length, "sh");
+
+		return ($length > 0 ? true : false);
+	}
+
 
 
 	/**

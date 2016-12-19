@@ -72,6 +72,7 @@ class ProgrammingLanguage extends Classify {
 			"css",
 			"json",
 			"sql",
+			"sh",
 		);
 	}
 
