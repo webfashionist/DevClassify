@@ -101,7 +101,7 @@ class Classify {
 	* @return bool
 	**/
 	private function removeComments() {
-		$this->code = preg_replace("/(^:)(\s?\/\/.*)/", '${1}', $this->code);
+		$this->code = preg_replace("/([^\:\('\"]|^)(\s*\/\/.*)/", '${1}', $this->code);
 		$this->code = preg_replace('/(.*?)(?=<!--)([\s\S]*?)-->/', '${1}', $this->code);
 		$this->code = preg_replace('/(.*?)(?=\/\*)([\s\S]*?)\*\//', '${1}', $this->code);
 		return true;
