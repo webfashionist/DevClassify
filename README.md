@@ -3,7 +3,23 @@ DevClassify analyzes the source code of several programming languages and return
 
 
 ## Usage
-To implement DevClassify in your project, you only need to `include` the `src/classes/ProgrammingLanguage.class.php` class and call the `check()` method as shown in `tests/checkLanguage.php`.
+To implement DevClassify in your project, you only need to `include` the `src/classes/ProgrammingLanguage.class.php` class and call the `check()` method. You can find an example in `tests/checkLanguage.php`.
+
+```php
+<?php
+include "src/classes/ProgrammingLanguage.class.php";
+
+$ProgrammingLanguage = new ProgrammingLanguage();
+$result = $ProgrammingLanguage->check($yourCode); // set your code as parameter of this method
+
+// probabilities:
+var_dump($result->probabilities);
+
+echo '<br>';
+// recommended file extension:
+echo $result->extension;
+?>
+```
 
 
 ## Languages
