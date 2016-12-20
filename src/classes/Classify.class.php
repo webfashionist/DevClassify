@@ -353,11 +353,13 @@ class Classify {
 
 		// check for SQL code
 		$sqlCheck = array(
-			"/CREATE\s+TABLE\s+`?[_a-z0-9]+`?/is",
+			"/CREATE\s+(TABLE|VIEW|INDEX)\s+`?[_a-z0-9]+`?/is",
 			"/SELECT\s+(DISTINCT\s+)?[ \*\.`_,a-z0-9]+\s+FROM\s+`?[_a-z0-9]+`?/is",
 			"/TRUNCATE\s+`?[_a-z0-9]+`?/is",
 			"/DELETE\s+FROM\s+`?[_a-z0-9]+`?/is",
-			"/UPDATE\s+`?[_a-z0-9]+`?\s+SET\s+/is"
+			"/UPDATE\s+`?[_a-z0-9]+`?\s+SET\s+/is",
+			"/DROP\s+TABLE\s+`?[_a-z0-9]+`?/is",
+			"/ALTER\s+TABLE\s+`?[_a-z0-9]+`?/is",
 			);
 		foreach($sqlCheck as $sqlQuery) {
 			preg_match_all($sqlQuery, $this->code, $SQL);
