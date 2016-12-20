@@ -21,11 +21,13 @@ class ProgrammingLanguage extends Classify {
 	/**
 	* Checks the code and returns the probability and the file extension
 	* @param string $code Code
+	* @param bool $removeComments Remove comments, may result in more inaccurate results (Default: true)
+	* @param bool $absoluteValues Use absolute values for probability values. Note: If JS or PHP snippets are used, the values will always be relative. (Default: false)
 	* @return object
 	**/
-	public function check($code) {
+	public function check($code, $removeComments = true, $absoluteValues = false) {
 		// analyze code
-		$probabilities = $this->language($code);
+		$probabilities = $this->language($code, $removeComments, $absoluteValues);
 		return (object) array(
 			"probabilities" => (object) $probabilities,
 			"extension" => $this->calcPriority($probabilities),
