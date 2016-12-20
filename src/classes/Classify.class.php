@@ -354,7 +354,7 @@ class Classify {
 		// check for SQL code
 		$sqlCheck = array(
 			"/CREATE\s+TABLE\s+`?[_a-z0-9]+`?/is",
-			"/SELECT\s+[\*`_,a-z0-9]+\s+FROM\s+`?[_a-z0-9]+`?/is",
+			"/SELECT\s+(DISTINCT\s+)?[ \*\.`_,a-z0-9]+\s+FROM\s+`?[_a-z0-9]+`?/is",
 			"/TRUNCATE\s+`?[_a-z0-9]+`?/is",
 			"/DELETE\s+FROM\s+`?[_a-z0-9]+`?/is",
 			"/UPDATE\s+`?[_a-z0-9]+`?\s+SET\s+/is"
