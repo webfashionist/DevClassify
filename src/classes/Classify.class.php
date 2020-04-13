@@ -109,7 +109,7 @@ class Classify
     private function resetParameters()
     {
         // reset probabilites
-        $this->probabilities = array("css" => 0, "html" => 0, "php" => 0, "js" => 0, "json" => 0, "sql" => 0, "xml" => 0, "sh" => 0);
+        $this->probabilities = ["css" => 0, "html" => 0, "php" => 0, "js" => 0, "json" => 0, "sql" => 0, "xml" => 0, "sh" => 0];
         // reset forced extension
         $this->forceExtension = false;
     }
@@ -121,7 +121,7 @@ class Classify
      **/
     private function removeComments(): bool
     {
-        $this->code = preg_replace("/([^\:\('\"]|^)(\s*\/\/.*)/", '${1}', $this->code);
+        $this->code = preg_replace("/([^:('\"]|^)(\s*\/\/.*)/", '${1}', $this->code);
         $this->code = preg_replace('/(.*?)(?=<!--)([\s\S]*?)-->/', '${1}', $this->code);
         $this->code = preg_replace('/(.*?)(?=\/\*)([\s\S]*?)\*\//', '${1}', $this->code);
         return true;
@@ -404,7 +404,7 @@ class Classify
             $this->forceExtension = array_search(max($result), $result);
         }
 
-        return (object)$result;
+        return (object) $result;
     }
 
 
@@ -412,37 +412,37 @@ class Classify
      * Checks if Bash is used
      * @return bool
      **/
-    private function bash()
+    private function bash(): bool
     {
         // check if Bash code is used
 
         // if else clause
-        preg_match_all("/if\s+\[\s+.*?\s+\].*?then.*?(elif\s+\[\s+.*?\s+\].*?then.*?)*fi/is", $this->code, $if);
-        $length = $this->calculateLength(isset($if[0]) ? $if[0] : array());
+        preg_match_all("/if\s+\[\s+.*?\s+].*?then.*?(elif\s+\[\s+.*?\s+].*?then.*?)*fi/is", $this->code, $if);
+        $length = $this->calculateLength($if[0] ?? []);
 
         // loops
-        preg_match_all("/(until|while|for\s+.*?\s+in\s+.*?)\s+\[\s+.*?\s+\].*?do.*?done/is", $this->code, $loop);
-        $length += $this->calculateLength(isset($loop[0]) ? $loop[0] : array());
+        preg_match_all("/(until|while|for\s+.*?\s+in\s+.*?)\s+\[\s+.*?\s+].*?do.*?done/is", $this->code, $loop);
+        $length += $this->calculateLength($loop[0] ?? []);
         preg_match_all("/for\s+.*?\s+in\s+.*?do.*?done/is", $this->code, $loop1);
-        $length += $this->calculateLength(isset($loop1[0]) ? $loop1[0] : array());
+        $length += $this->calculateLength($loop1[0] ?? []);
 
         // commands
-        $commands = array(
+        $commands = [
             "/echo\s+[\$][_a-z0-9]+[^;]$/is", // echo variable without ; at the end
             "/^[_a-z0-9]+=[^;]+$/is", // set variable (e.g. variable="test" without ; at the end)
             "/let\s+[_a-z0-9]+=/is", // define variables with let
             "/(read|touch|ls|cat|mkdir|cd|grep|rm|tar|cp|mv)\s+/is", // read input,
             "/\A#!(\/usr)?(\/local)?\/bin(\/env)?\s?(\/)?(bash|sh).*?\z/is", // Shebang (e.g.  #!/bin/bash)
-        );
+        ];
         foreach ($commands as $command) {
             preg_match_all($command, $this->code, $bashCommand);
-            $length += $this->calculateLength(isset($bashCommand[0]) ? $bashCommand[0] : array());
+            $length += $this->calculateLength($bashCommand[0] ?? []);
         }
 
         // calculate probability for this code
         $this->probability($length, "sh");
 
-        return ($length > 0 ? true : false);
+        return $length > 0;
     }
 
 
@@ -450,7 +450,7 @@ class Classify
      * Checks if valid JSON is used
      * @return bool
      **/
-    private function json()
+    private function json(): bool
     {
         // check if JSON code is used
         $json = json_decode($this->code);
@@ -470,14 +470,14 @@ class Classify
      * Checks if PHP is used
      * @return bool
      **/
-    private function php()
+    private function php(): bool
     {
         // check if PHP code is used
         preg_match_all('/<\?([php|$| ])(.*?)(\Z|\?>)/is', $this->code, $output);
         $length = $this->calculateLength($output[2]);
         // calculate probability for this code
         $this->probability($length, "php");
-        return ($length > 0 ? true : false);
+        return $length > 0;
     }
 
 
@@ -485,7 +485,7 @@ class Classify
      * Checks if XML is used
      * @return bool
      **/
-    private function xml()
+    private function xml(): bool
     {
         // check if XML code is used
         preg_match_all('/<\?xml.*?>(.*?)\Z/is', $this->code, $output);
@@ -498,7 +498,7 @@ class Classify
 
         // calculate probability for this code
         $this->probability($length, "xml");
-        return ($length > 0 ? true : false);
+        return $length > 0;
     }
 
 
@@ -506,19 +506,19 @@ class Classify
      * Checks if JavaScript is used
      * @return bool
      **/
-    private function javaScript()
+    private function javaScript(): bool
     {
         // check for JavaScript implemented through <script> tags
         preg_match_all("/<script.*?>(.*?)<\/script>/is", $this->code, $output);
-        $length = $this->calculateLength(isset($output[1]) ? $output[1] : array());
+        $length = $this->calculateLength($output[1] ?? []);
 
         // check for script src as well which obviously should include JavaScript
         preg_match_all("/<script.*?src=[\"|'](.*?)[\"|']>(.*?)<\/script>/is", $this->code, $output2);
-        $length += $this->calculateLength(isset($output2[1]) ? $output2[1] : array());
+        $length += $this->calculateLength($output2[1] ?? []);
 
         // check for predefined jQuery functions
         $length2 = 0;
-        $jQueryCheck = array(
+        $jQueryCheck = [
             "/\.animate\(.*?\)/is",
             "/\.css\(.*?\)/is",
             "/\.on\(.*?\)/is",
@@ -537,11 +537,11 @@ class Classify
             "/\.append\(.*?\)/is",
             "/\.prepend\(.*?\)/is",
             "/\.bind\(.*?\)/is",
-        );
+        ];
         foreach ($jQueryCheck as $jQuery) {
             preg_match_all($jQuery, $this->code, $JSfunctions);
             if (isset($JSfunctions[0]) && is_array($JSfunctions[0]) && count($JSfunctions[0]) > 0) {
-                $length2 += $this->calculateLength(isset($JSfunctions[0]) ? $JSfunctions[0] : array());
+                $length2 += $this->calculateLength($JSfunctions[0] ?? []);
             }
         }
 
@@ -549,7 +549,7 @@ class Classify
         // calculate the probability for this code
         $this->probability($length2, "jquery"); // set jQuery to 0
         $this->probability($length, "js");
-        return ($length > 0 ? true : false);
+        return $length > 0;
     }
 
 
@@ -557,33 +557,32 @@ class Classify
      * Checks if HTML syntax has been used
      * @return bool
      **/
-    private function html()
+    private function html(): bool
     {
         // default tags
         preg_match_all("/<[^<]+>(.*)<\/[^<]+>/is", $this->code, $output);
-        $length = $this->calculateLength(isset($output[0]) ? $output[0] : array());
+        $length = $this->calculateLength($output[0] ?? []);
 
         // single tags (e.g. DOCTYPE, <link>, <img>, <br>, <hr>)
-        preg_match_all("/<(!DOCTYPE|link|img|br|hr|meta)[^>]*>/is", $this->code, $output2);
-        $length += $this->calculateLength(isset($output2[0]) ? $output2[0] : array());
+        preg_match_all("/<(!DOCTYPE|input|link|img|br|hr|meta)[^>]*>/is", $this->code, $output2);
+        $length += $this->calculateLength($output2[0] ?? []);
 
-        $code = '';
         if (isset($output[0]) && $output[0]) {
             $code = implode("", $output[0]);
             // remove JavaScript from HTML
             preg_match_all("/<script.*?>(.*?)<\/script>/is", $code, $o);
-            $length -= $this->calculateLength(isset($o[1]) ? $o[1] : array());
+            $length -= $this->calculateLength($o[1] ?? []);
             // remove CSS from HTML
             preg_match_all("/<style.*?>(.*?)<\/style>/is", $code, $o);
-            $length -= $this->calculateLength(isset($o[1]) ? $o[1] : array());
+            $length -= $this->calculateLength($o[1] ?? []);
             // remove inline CSS from HTML
             preg_match_all("/style=[\"|'](.*?)[\"|']/is", $code, $o);
-            $length -= $this->calculateLength(isset($o[1]) ? $o[1] : array());
+            $length -= $this->calculateLength($o[1] ?? []);
         }
 
         // calculate the probability for this code
         $this->probability($length, "html");
-        return ($length > 0 ? true : false);
+        return $length > 0;
     }
 
 
@@ -591,13 +590,13 @@ class Classify
      * Checks if CSS syntax has been used (does not include inlineCSS())
      * @return bool
      **/
-    private function css()
+    private function css(): bool
     {
         preg_match_all("/(\w+)?(\s*>\s*)?(#[a-z0-9]+)?\s*(\.[a-z0-9]+)?\s*{(.*?)}/is", $this->code, $output);
         $length = $this->calculateLength(isset($output[0]) ? $output[0] : array());
         // calculate the probability for this code
         $this->probability($length, "css");
-        return ($length > 0 ? true : false);
+        return $length > 0;
     }
 
 
@@ -605,13 +604,13 @@ class Classify
      * Checks if inline CSS is used
      * @return bool
      **/
-    private function inLineCSS()
+    private function inLineCSS(): bool
     {
         preg_match_all("/style=[\"|'](.*?)[\"|']/is", $this->code, $output);
         $length = $this->calculateLength(isset($output[1]) ? $output[1] : array());
         // calculate the probability for this code
         $this->probability($length, "inlineCSS");
-        return ($length > 0 ? true : false);
+        return $length > 0;
     }
 
 
@@ -620,7 +619,7 @@ class Classify
      * @param string[] $array
      * @return int
      **/
-    private function calculateLength($array)
+    private function calculateLength($array): int
     {
         $length = 0;
         if ($array && isset($array) && is_array($array) && count($array) > 0) {
@@ -638,7 +637,7 @@ class Classify
      * @param string $language Language (e.g. PHP, CSS, ...)
      * @return int
      */
-    private function probability($length, $language)
+    private function probability($length, $language): int
     {
         $probability = (($length * 100) / $this->codeLength);
         $this->probabilities[$language] = (isset($this->probabilities[$language]) ? $probability + $this->probabilities[$language] : $probability);
