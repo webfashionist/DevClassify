@@ -65,6 +65,7 @@ class ProgrammingLanguage extends Classify
     {
         return [
             "php",
+            "py",
             "xml",
             "html",
             "js",

@@ -51,6 +51,7 @@ $time = microtime(true); // Gets microseconds
 		?>
 		<div style="margin:20px auto 10px auto;padding:20px;background-color:#FFF;width:400px;">
 			<b>PHP:</b> <?php echo $prob->php; ?>%<br>
+            <b>Python:</b> <?php echo $prob->python; ?>%<br>
 			<b>JavaScript:</b> <?php echo $prob->js; ?>%<br>
 			<b>jQuery:</b> <?php echo $prob->jquery; ?>%<br>
 			<b>HTML:</b> <?php echo $prob->html; ?>%<br>

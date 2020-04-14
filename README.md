@@ -32,6 +32,6 @@ echo $result->extension;
 - [X] SQL
 - [X] JSON
 - [X] Bash
-- [ ] Python
+- [X] Python
 - [ ] ...
 

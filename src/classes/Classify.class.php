@@ -11,9 +11,10 @@
 Validates:
 PHP, CSS, HTML, JavaScript
 XML, jQuery, SQL, JSON
+Bash, Python
 
 Todo in the future maybe:
-Swift, LESS/SASS/, Bash, Python
+Swift, LESS/SASS/
 */
 
 class Classify
@@ -109,7 +110,7 @@ class Classify
     private function resetParameters()
     {
         // reset probabilites
-        $this->probabilities = ["css" => 0, "html" => 0, "php" => 0, "js" => 0, "json" => 0, "sql" => 0, "xml" => 0, "sh" => 0];
+        $this->probabilities = ["css" => 0, "html" => 0, "php" => 0, "js" => 0, "python" => 0, "json" => 0, "sql" => 0, "xml" => 0, "sh" => 0];
         // reset forced extension
         $this->forceExtension = false;
     }
@@ -138,6 +139,7 @@ class Classify
         $this->css();
         $this->inLineCSS();
         $this->javascript();
+        $this->python();
         if ($this->probabilities["js"] === 0 && $this->probabilities["php"] <= 65) {
             // no development tags were used - check for any logical language
             $this->logic();
@@ -400,8 +402,10 @@ class Classify
                 $this->probabilities[$language] = ($points * 100) / $totalPoints;
             }
 
-            // force extension and ignore extension priorities
-            $this->forceExtension = array_search(max($result), $result);
+            if($totalPoints > $this->probabilities["py"]) {
+                // force extension and ignore extension priorities
+                $this->forceExtension = array_search(max($result), $result);
+            }
         }
 
         return (object) $result;
@@ -498,6 +502,53 @@ class Classify
 
         // calculate probability for this code
         $this->probability($length, "xml");
+        return $length > 0;
+    }
+
+    private function python(): bool
+    {
+        $length = 0;
+
+        // imports
+        preg_match_all("/from [a-zA-Z.]+ import [a-zA-Z.]+\s*\r?\n/Uis", $this->code, $output);
+        $length += $this->calculateLength($output[0] ?? []);
+        preg_match_all("/\nimport [a-zA-Z.]+\s*\r?\n/Uis", $this->code, $output);
+        $length += $this->calculateLength($output[0] ?? []);
+
+        // if clauses
+        preg_match_all("/if (not)? [^:]+:\s*\r?\n(.*?else:)/is", $this->code, $output);
+        $length += $this->calculateLength($output[0] ?? []);
+
+        // variables
+        preg_match_all("/[_a-zA-Z]+[_a-zA-Z0-9]*\s+=\s+.*?\s*\r?\n/is", $this->code, $output);
+        $length += $this->calculateLength($output[0] ?? []);
+
+        // check predefined function calls
+        preg_match_all("/(print|str)\([^)]*\)/is", $this->code, $output);
+        $length += $this->calculateLength($output[0] ?? []);
+
+
+        $non_used_characters = [
+            "{", "}", ";", "->",
+        ];
+
+        $non_used_characters_used = false;
+        foreach($non_used_characters as $character) {
+            if(strpos($this->code, $character) !== false) {
+                $non_used_characters_used = true;
+                break;
+            }
+        }
+        if($non_used_characters_used) {
+            // using these parentheses and semicolons reduces the possibility like - a lot!
+            $length /= 2;
+        } else {
+            // if all of the above characters are not used at all, it increases the possibility a lot!
+            $length *= 2;
+        }
+
+        // calculate probability for this code
+        $this->probability($length, "py");
         return $length > 0;
     }
 
